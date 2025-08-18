@@ -1,0 +1,9 @@
+#+title Skrynia
+#+author Mike Oz
+
+* Skrynia
+  Skrynia is a meta package for python utilities for sqlalchemy, fastapi, starlette. 
+  Building blocks for app server, that could replace fastapi in future
+
+** skrynia-sqla
+Package that have sqlalchemy extras like repository
