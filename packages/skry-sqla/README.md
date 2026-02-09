@@ -70,3 +70,26 @@ uv run pytest
 uv run ruff check .
 uv run mypy
 ```
+
+## Pytest Plugin
+
+Use `skry_sqla.pytest_plugin` fixtures in tests via:
+
+```python
+pytest_plugins = ("skry_sqla.pytest_plugin",)
+```
+
+Schema setup modes:
+
+- default metadata mode: creates tables with `Base.metadata.create_all`
+- migration mode: set `SKRY_SQLA_USE_MIGRATIONS=1`
+
+When migration mode is enabled, provide either:
+
+- `SKRY_SQLA_ALEMBIC_CONFIG=/path/to/alembic.ini` (runs `upgrade head` by default)
+- custom `sqla_migration_callback` fixture (runs once per test session)
+
+Optional env vars:
+
+- `SKRY_SQLA_MIGRATION_TARGET` (default: `head`)
+- `SKRY_SQLA_TEST_DATABASE_URI`
