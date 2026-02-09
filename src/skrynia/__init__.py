@@ -1,4 +1,5 @@
-from skry_sqla import hello_sqla
+from skry_sqla import __version__ as sqla_version
+
 
 def hello() -> str:
-    return hello_sqla()
+    return f"Hello from skrynia with skry-sqla {sqla_version}!"

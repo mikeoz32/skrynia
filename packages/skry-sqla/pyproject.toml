@@ -1,7 +1,7 @@
 [project]
 name = "skry-sqla"
 version = "0.1.0"
-description = "sqlalchemy extensions"
+description = "Async SQLAlchemy helpers: entity manager, repository, and model mixins"
 readme = "README.md"
 authors = [
     { name = "Mike Oz", email = "kozloffsky@hotmal.com" }
@@ -10,7 +10,23 @@ requires-python = ">=3.13"
 dependencies = [
     "sqlalchemy>=2.0.43",
 ]
+keywords = ["sqlalchemy", "asyncio", "repository", "orm"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Framework :: AsyncIO",
+    "License :: OSI Approved :: MIT License",
+    "Typing :: Typed",
+]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "aiosqlite>=0.21.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/skry_sqla"]
