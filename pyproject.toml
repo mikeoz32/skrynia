@@ -23,3 +23,34 @@ members = ["packages/*"]
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.17.1",
+    "pytest>=8.4.1",
+    "pytest-asyncio>=1.1.0",
+    "pytest-cov>=6.2.1",
+    "ruff>=0.12.9",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["packages/*/tests"]
+addopts = "--cov=packages/skry-sqla/src/skry_sqla --cov-report=term-missing --cov-fail-under=90"
+
+[tool.coverage.report]
+skip_covered = true
+show_missing = true
+
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+warn_unused_configs = true
+show_error_codes = true
+files = ["packages/skry-sqla/src/skry_sqla"]
