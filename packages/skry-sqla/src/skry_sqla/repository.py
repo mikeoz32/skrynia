@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from typing import Any, Generic, List, TypeVar, cast
+from typing import Any, ClassVar, Generic, List, TypeVar, cast
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase
@@ -13,8 +13,14 @@ DB = TypeVar("DB", bound=DeclarativeBase)
 
 
 class AsyncRepository(Generic[DB]):
-    def __init__(self, session: AsyncSession, model: type[DB]) -> None:
-        self.model = model
+    model: ClassVar[type[DB]]
+
+    def __init__(self, session: AsyncSession) -> None:
+        if getattr(self.__class__, "model", None) is None:
+            raise ValueError(
+                f"{self.__class__.__name__}.model is not set. "
+                "Define class attribute `model`."
+            )
         self.entity_manager = AsyncEntityManager(session)
 
     async def add(self, entity: DB) -> DB:
