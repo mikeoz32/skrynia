@@ -35,7 +35,7 @@ dev = [
 
 [tool.pytest.ini_options]
 testpaths = ["packages/*/tests"]
-addopts = "--cov=packages/skry-sqla/src/skry_sqla --cov-report=term-missing --cov-fail-under=90"
+addopts = "--cov=skry_sqla --cov-report=term-missing --cov-fail-under=90"
 
 [tool.coverage.report]
 skip_covered = true

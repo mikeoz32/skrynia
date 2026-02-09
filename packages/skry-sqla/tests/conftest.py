@@ -1,16 +1,11 @@
+from __future__ import annotations
+
 import pytest_asyncio
-from skry_sqla.model import Base
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncSession
+
+pytest_plugins = ("skry_sqla.pytest_plugin",)
 
 
-@pytest_asyncio.fixture(scope="session")
-async def session():
-    engine = create_async_engine("sqlite+aiosqlite:///:memory:")
-
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-
-    async with AsyncSession(engine) as session:
-        yield session
-
-    await engine.dispose()
+@pytest_asyncio.fixture
+async def session(sqla_main_session: AsyncSession) -> AsyncSession:
+    return sqla_main_session
