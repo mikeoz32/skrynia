@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any, ClassVar, Generic, List, TypeVar, cast
 
-from sqlalchemy import Select, asc, desc, select
+from sqlalchemy import Select, asc, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase, joinedload
 from sqlalchemy.sql import Executable
@@ -84,8 +84,16 @@ class AsyncRepository(Generic[DB]):
     async def add(self, entity: DB) -> DB:
         return cast(DB, await self.entity_manager.save(entity))
 
+    async def save(self, entity: DB) -> DB:
+        return cast(DB, await self.entity_manager.save(entity))
+
     def create(self, **kwargs: Any) -> DB:
         return self.model(**kwargs)
+
+    def patch(self, entity: DB, data: Mapping[str, Any]) -> DB:
+        for field, value in data.items():
+            setattr(entity, field, value)
+        return entity
 
     async def all(self, options: SelectOptions = None) -> list[DB]:
         statement = apply_options(select(self.model), options)
@@ -117,8 +125,31 @@ class AsyncRepository(Generic[DB]):
     async def get_one_or_none(self, statement: Executable) -> DB | None:
         return cast(DB | None, await self.entity_manager.get_one_or_none(statement))
 
+    async def get_by_id(
+        self, id_value: Any, options: SelectOptions = None
+    ) -> DB | None:
+        if not hasattr(self.model, "id"):
+            raise ValueError(f"{self.model.__name__} does not define id attribute")
+
+        model_with_id = cast(Any, self.model)
+        statement = select(self.model).where(model_with_id.id == id_value)
+        statement = apply_options(statement, options)
+        return await self.get_one_or_none(statement)
+
     async def list(self, statement: Executable) -> list[DB]:
         return cast(list[DB], await self.entity_manager.list(statement))
+
+    async def count(self, filters: Sequence[Filter] | None = None) -> int:
+        statement = select(func.count()).select_from(self.model)
+        for item in filters or []:
+            statement = item.apply(statement, self.model)
+
+        result = await self.entity_manager.execute_query(statement)
+        value = result.scalar_one()
+        return int(value)
+
+    async def exists(self, filters: Sequence[Filter] | None = None) -> bool:
+        return (await self.count(filters=filters)) > 0
 
     async def delete(self, entity: DB) -> None:
         await self.entity_manager.delete(entity)

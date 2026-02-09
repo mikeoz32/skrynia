@@ -151,3 +151,39 @@ async def test_find_raises_for_unknown_relation(session) -> None:
 
     with pytest.raises(ValueError, match="Unknown relation"):
         await repo.find(relations=["missing_relation"])
+
+
+async def test_save_alias_and_get_by_id(session) -> None:
+    repo = UserRepository(session)
+
+    user = await repo.save(User(email="save-alias@test.com", name="save"))
+    loaded = await repo.get_by_id(user.id)
+
+    assert loaded is not None
+    assert loaded.email == "save-alias@test.com"
+
+
+async def test_patch_and_save_updates_entity(session) -> None:
+    repo = UserRepository(session)
+    user = await repo.add(User(email="patch@test.com", name="before"))
+
+    updated = await repo.save(repo.patch(user, {"name": "after"}))
+
+    assert updated.name == "after"
+    loaded = await repo.get_by_id(updated.id)
+    assert loaded is not None
+    assert loaded.name == "after"
+
+
+async def test_count_and_exists(session) -> None:
+    repo = UserRepository(session)
+    await repo.add(User(email="count-a@test.com", name="count"))
+    await repo.add(User(email="count-b@test.com", name="count"))
+
+    count = await repo.count(filters=[Like("email", "count-%")])
+    exists = await repo.exists(filters=[Equal("email", "count-a@test.com")])
+    missing = await repo.exists(filters=[Equal("email", "count-missing@test.com")])
+
+    assert count == 2
+    assert exists is True
+    assert missing is False
