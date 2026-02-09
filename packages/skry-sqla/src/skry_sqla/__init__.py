@@ -2,6 +2,32 @@ from importlib.metadata import PackageNotFoundError, version
 
 from .entity_manager import AsyncEntityManager
 from .exceptions import PersistenceError, SkrySqlaError
+from .filters import (
+    And,
+    ArrayContains,
+    ArrayOverlap,
+    Between,
+    Contains,
+    EndsWith,
+    Equal,
+    Filter,
+    GreaterOrEqual,
+    GreaterThan,
+    ILike,
+    In,
+    IsNotNull,
+    IsNull,
+    JsonContains,
+    JsonHasKey,
+    LessOrEqual,
+    LessThan,
+    Like,
+    Not,
+    NotEqual,
+    NotIn,
+    Or,
+    StartsWith,
+)
 from .model import (
     M_ID,
     M_TS,
@@ -16,7 +42,7 @@ from .model import (
     UpdatedAtMixin,
     UUIDIDMixin,
 )
-from .repository import AsyncRepository
+from .repository import AsyncRepository, QueryBuilder, SelectOptions, apply_options
 
 try:
     __version__ = version("skry-sqla")
@@ -27,6 +53,8 @@ __all__ = [
     "__version__",
     "AsyncEntityManager",
     "AsyncRepository",
+    "QueryBuilder",
+    "SelectOptions",
     "Base",
     "CreatedAtMixin",
     "CreatedUpdatedAtMixin",
@@ -37,6 +65,31 @@ __all__ = [
     "M_TS",
     "PersistenceError",
     "SkrySqlaError",
+    "Filter",
+    "And",
+    "Or",
+    "Not",
+    "Equal",
+    "In",
+    "Like",
+    "NotEqual",
+    "GreaterThan",
+    "LessThan",
+    "GreaterOrEqual",
+    "LessOrEqual",
+    "Between",
+    "IsNull",
+    "IsNotNull",
+    "ILike",
+    "StartsWith",
+    "EndsWith",
+    "Contains",
+    "NotIn",
+    "JsonContains",
+    "JsonHasKey",
+    "ArrayContains",
+    "ArrayOverlap",
+    "apply_options",
     "TimestampableMixin",
     "TimestamableMixin",
     "UpdatedAtMixin",
