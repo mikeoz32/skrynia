@@ -187,3 +187,28 @@ async def test_count_and_exists(session) -> None:
     assert count == 2
     assert exists is True
     assert missing is False
+
+
+async def test_find_and_count_returns_items_and_total(session) -> None:
+    repo = UserRepository(session)
+    await repo.add(User(email="fac-a@test.com", name="a"))
+    await repo.add(User(email="fac-b@test.com", name="b"))
+    await repo.add(User(email="other@test.com", name="c"))
+
+    items, total = await repo.find_and_count(
+        filters=[Like("email", "fac-%")],
+        order_by=["email"],
+    )
+
+    assert total == 2
+    assert [item.email for item in items] == ["fac-a@test.com", "fac-b@test.com"]
+
+
+async def test_find_and_count_empty_result(session) -> None:
+    repo = UserRepository(session)
+    items, total = await repo.find_and_count(
+        filters=[Equal("email", "missing@test.com")]
+    )
+
+    assert items == []
+    assert total == 0
