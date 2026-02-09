@@ -7,8 +7,16 @@ from sqlalchemy import func, select
 pytestmark = pytest.mark.asyncio
 
 
+class UserRepository(AsyncRepository[User]):
+    model = User
+
+
+class MissingModelRepository(AsyncRepository[User]):
+    pass
+
+
 async def test_add_and_get(session) -> None:
-    repo = AsyncRepository(session, User)
+    repo = UserRepository(session)
 
     saved = await repo.add(User(email="repo-save@test.com", name="repo"))
     loaded = await repo.get_one_or_none(
@@ -21,7 +29,7 @@ async def test_add_and_get(session) -> None:
 
 
 async def test_list_returns_entities(session) -> None:
-    repo = AsyncRepository(session, User)
+    repo = UserRepository(session)
     await repo.add(User(email="repo-list-a@test.com", name="a"))
     await repo.add(User(email="repo-list-b@test.com", name="b"))
 
@@ -33,7 +41,7 @@ async def test_list_returns_entities(session) -> None:
 
 
 async def test_delete_removes_entity(session) -> None:
-    repo = AsyncRepository(session, User)
+    repo = UserRepository(session)
     saved = await repo.add(User(email="repo-delete@test.com", name="delete-me"))
 
     await repo.delete(saved)
@@ -45,7 +53,7 @@ async def test_delete_removes_entity(session) -> None:
 
 
 async def test_insert_many_returns_requested_fields(session) -> None:
-    repo = AsyncRepository(session, User)
+    repo = UserRepository(session)
 
     inserted = await repo.insert_many(
         [
@@ -61,7 +69,7 @@ async def test_insert_many_returns_requested_fields(session) -> None:
 
 
 async def test_add_rolls_back_and_raises_persistence_error(session) -> None:
-    repo = AsyncRepository(session, User)
+    repo = UserRepository(session)
     await repo.add(User(email="duplicate@test.com", name="first"))
 
     with pytest.raises(PersistenceError):
@@ -71,3 +79,8 @@ async def test_add_rolls_back_and_raises_persistence_error(session) -> None:
         select(func.count()).select_from(User).where(User.email == "duplicate@test.com")
     )
     assert count == 1
+
+
+async def test_missing_model_definition_raises_error(session) -> None:
+    with pytest.raises(ValueError, match="model"):
+        MissingModelRepository(session)
