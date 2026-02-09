@@ -114,6 +114,20 @@ class AsyncRepository(Generic[DB]):
         )
         return await self.list(statement)
 
+    async def find_and_count(
+        self,
+        filters: Sequence[Filter] | None = None,
+        order_by: Sequence[str] | None = None,
+        relations: Sequence[str] | None = None,
+    ) -> tuple[list[DB], int]:
+        items = await self.find(
+            filters=filters,
+            order_by=order_by,
+            relations=relations,
+        )
+        total = await self.count(filters=filters)
+        return items, total
+
     async def find_one(
         self,
         filters: Sequence[Filter] | None = None,
