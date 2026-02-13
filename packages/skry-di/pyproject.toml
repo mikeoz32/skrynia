@@ -1,0 +1,41 @@
+[project]
+name = "skry-di"
+version = "0.1.0"
+description = "Typed DI container with Starlette and FastAPI integrations"
+readme = "README.md"
+authors = [
+    { name = "Mike Oz", email = "kozloffsky@hotmal.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "typing-extensions>=4.12.2",
+]
+keywords = ["dependency-injection", "di", "fastapi", "starlette"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Framework :: AsyncIO",
+    "Typing :: Typed",
+]
+
+[project.optional-dependencies]
+starlette = [
+    "starlette>=0.41.0",
+]
+fastapi = [
+    "fastapi>=0.115.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "fastapi>=0.115.0",
+    "httpx>=0.28.1",
+    "starlette>=0.41.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/skry_di"]

@@ -13,9 +13,13 @@ dependencies = []
 sqla = [
   "skry-sqla"
 ]
+di = [
+  "skry-di"
+]
 
 [tool.uv.sources]
 skry-sqla = { workspace = true }
+skry-di = { workspace = true }
 
 [tool.uv.workspace]
 members = ["packages/*"]
@@ -26,16 +30,19 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
+    "fastapi>=0.129.0",
+    "httpx>=0.28.1",
     "mypy>=1.17.1",
     "pytest>=8.4.1",
     "pytest-asyncio>=1.1.0",
     "pytest-cov>=6.2.1",
     "ruff>=0.12.9",
+    "starlette>=0.52.1",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["packages/*/tests"]
-addopts = "--cov=skry_sqla --cov-report=term-missing --cov-fail-under=90"
+addopts = "--cov=skry_sqla --cov=skry_di --cov-report=term-missing --cov-fail-under=90"
 
 [tool.coverage.report]
 skip_covered = true
@@ -53,4 +60,4 @@ python_version = "3.13"
 strict = true
 warn_unused_configs = true
 show_error_codes = true
-files = ["packages/skry-sqla/src/skry_sqla"]
+files = ["packages/skry-sqla/src/skry_sqla", "packages/skry-di/src/skry_di"]

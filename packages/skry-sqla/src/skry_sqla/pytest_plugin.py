@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from collections.abc import AsyncGenerator, Awaitable, Callable, Mapping
 from importlib import import_module
 from typing import Any, cast
@@ -22,11 +21,102 @@ ModelMapping = Mapping[str, Any]
 MigrationCallback = Callable[[AsyncConnection], Awaitable[None]]
 
 
-def _env_flag(name: str, default: bool) -> bool:
-    value = os.getenv(name)
-    if value is None:
+def pytest_addoption(parser: Any) -> None:
+    group = parser.getgroup("skry-sqla")
+
+    parser.addini(
+        "sqla_test_database_uri",
+        "Database URI for skry-sqla pytest plugin.",
+        default="sqlite+aiosqlite:///:memory:",
+    )
+    parser.addini(
+        "sqla_use_migrations",
+        "Enable migration mode for skry-sqla pytest plugin.",
+        type="bool",
+        default=False,
+    )
+    parser.addini(
+        "sqla_alembic_config_path",
+        "Path to Alembic config for skry-sqla pytest plugin.",
+        default="",
+    )
+    parser.addini(
+        "sqla_migration_target",
+        "Alembic target revision for skry-sqla pytest plugin.",
+        default="head",
+    )
+
+    group.addoption(
+        "--sqla-test-database-uri",
+        action="store",
+        dest="sqla_test_database_uri",
+        default=None,
+        help="Override sqla_test_database_uri.",
+    )
+    group.addoption(
+        "--sqla-use-migrations",
+        action="store_true",
+        dest="sqla_use_migrations",
+        default=None,
+        help="Enable migration mode.",
+    )
+    group.addoption(
+        "--sqla-no-migrations",
+        action="store_false",
+        dest="sqla_use_migrations",
+        help="Disable migration mode.",
+    )
+    group.addoption(
+        "--sqla-alembic-config-path",
+        action="store",
+        dest="sqla_alembic_config_path",
+        default=None,
+        help="Override sqla_alembic_config_path.",
+    )
+    group.addoption(
+        "--sqla-migration-target",
+        action="store",
+        dest="sqla_migration_target",
+        default=None,
+        help="Override sqla_migration_target.",
+    )
+
+
+def _resolve_string_setting(
+    *,
+    pytestconfig: Any,
+    option_name: str,
+    ini_name: str,
+    default: str,
+) -> str:
+    cli_value = pytestconfig.getoption(option_name)
+    if cli_value not in (None, ""):
+        return str(cli_value)
+
+    ini_value = pytestconfig.getini(ini_name)
+    if ini_value not in (None, ""):
+        return str(ini_value)
+
+    return default
+
+
+def _resolve_bool_setting(
+    *,
+    pytestconfig: Any,
+    option_name: str,
+    ini_name: str,
+    default: bool,
+) -> bool:
+    cli_value = pytestconfig.getoption(option_name)
+    if cli_value is not None:
+        return bool(cli_value)
+
+    ini_value = pytestconfig.getini(ini_name)
+    if isinstance(ini_value, bool):
+        return ini_value
+    if ini_value in (None, ""):
         return default
-    return value.strip().lower() in {"1", "true", "yes", "on"}
+    return str(ini_value).strip().lower() in {"1", "true", "yes", "on"}
 
 
 def _run_alembic_upgrade(
@@ -67,7 +157,8 @@ async def _initialize_schema(
     if alembic_config_path is None:
         raise RuntimeError(
             "Migration mode is enabled but no Alembic config path is set. "
-            "Set SKRY_SQLA_ALEMBIC_CONFIG or override sqla_migration_callback."
+            "Set sqla_alembic_config_path/--sqla-alembic-config-path or "
+            "override sqla_migration_callback."
         )
 
     await connection.run_sync(
@@ -80,23 +171,44 @@ async def _initialize_schema(
 
 
 @pytest.fixture(scope="session")
-def sqla_test_database_uri() -> str:
-    return os.getenv("SKRY_SQLA_TEST_DATABASE_URI", "sqlite+aiosqlite:///:memory:")
+def sqla_test_database_uri(pytestconfig: pytest.Config) -> str:
+    return _resolve_string_setting(
+        pytestconfig=pytestconfig,
+        option_name="sqla_test_database_uri",
+        ini_name="sqla_test_database_uri",
+        default="sqlite+aiosqlite:///:memory:",
+    )
 
 
 @pytest.fixture(scope="session")
-def sqla_use_migrations() -> bool:
-    return _env_flag("SKRY_SQLA_USE_MIGRATIONS", default=False)
+def sqla_use_migrations(pytestconfig: pytest.Config) -> bool:
+    return _resolve_bool_setting(
+        pytestconfig=pytestconfig,
+        option_name="sqla_use_migrations",
+        ini_name="sqla_use_migrations",
+        default=False,
+    )
 
 
 @pytest.fixture(scope="session")
-def sqla_alembic_config_path() -> str | None:
-    return os.getenv("SKRY_SQLA_ALEMBIC_CONFIG")
+def sqla_alembic_config_path(pytestconfig: pytest.Config) -> str | None:
+    value = _resolve_string_setting(
+        pytestconfig=pytestconfig,
+        option_name="sqla_alembic_config_path",
+        ini_name="sqla_alembic_config_path",
+        default="",
+    )
+    return value or None
 
 
 @pytest.fixture(scope="session")
-def sqla_migration_target() -> str:
-    return os.getenv("SKRY_SQLA_MIGRATION_TARGET", "head")
+def sqla_migration_target(pytestconfig: pytest.Config) -> str:
+    return _resolve_string_setting(
+        pytestconfig=pytestconfig,
+        option_name="sqla_migration_target",
+        ini_name="sqla_migration_target",
+        default="head",
+    )
 
 
 @pytest.fixture(scope="session")
