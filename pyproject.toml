@@ -16,10 +16,18 @@ sqla = [
 di = [
   "skry-di"
 ]
+stream = [
+  "skry-stream"
+]
+bun = [
+  "skry-bun"
+]
 
 [tool.uv.sources]
 skry-sqla = { workspace = true }
 skry-di = { workspace = true }
+skry-stream = { workspace = true }
+skry-bun = { workspace = true }
 
 [tool.uv.workspace]
 members = ["packages/*"]
@@ -42,7 +50,7 @@ dev = [
 
 [tool.pytest.ini_options]
 testpaths = ["packages/*/tests"]
-addopts = "--cov=skry_sqla --cov=skry_di --cov-report=term-missing --cov-fail-under=90"
+addopts = "--cov=skry_sqla --cov=skry_di --cov=skry_stream --cov-report=term-missing --cov-fail-under=90"
 
 [tool.coverage.report]
 skip_covered = true
@@ -60,4 +68,4 @@ python_version = "3.13"
 strict = true
 warn_unused_configs = true
 show_error_codes = true
-files = ["packages/skry-sqla/src/skry_sqla", "packages/skry-di/src/skry_di"]
+files = ["packages/skry-sqla/src/skry_sqla", "packages/skry-di/src/skry_di", "packages/skry-stream/src/skry_stream", "packages/skry-bun/src/skry_bun"]
